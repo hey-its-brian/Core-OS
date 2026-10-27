@@ -28,7 +28,7 @@ CALC work; the other modules show their manifests until they are ported.
   FT6336U touch, AXP2101 PMIC, AW9523B expander, BM8563 RTC, AW88298 speaker,
   SD card. Brought up through Espressif's `m5stack_core_s3` BSP.
 - Faces Bottom3: 600 mAh battery, ten SK6812 LEDs (five a side) on the M-Bus
-  5 V rail, LED data on G15 (set the base's LED IO switch to that side).
+  5 V rail, LED data on G5 with the base's LED IO switch on its "CoreS3" side.
 - Faces Keyboard3: STM32 at I2C 0x08 on the system bus (G12 / G11), one byte
   per key, polled every 12 ms and translated to HID usages in `deck_hal`.
 

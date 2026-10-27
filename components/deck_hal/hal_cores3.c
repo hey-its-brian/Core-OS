@@ -246,13 +246,16 @@ static void kbd_light_apply(void)
 
 /* ---- Faces Bottom3 side LEDs ----------------------------------------------
  * Ten SK6812s, five a side, behind the Core on the Bottom3. Their data line
- * is the base's LED IO switch: G15 for the CoreS3 (the switch's other
- * position, G25, is not a pin on the S3). They run from the M-Bus 5 V rail,
- * which the CoreS3 keeps off until asked: BOOST_EN (AW9523 P1_7) and
+ * is the base's LED IO switch, which picks one of two M-Bus positions named
+ * after the classic Core: "Core" is the old G15 position (I2S_OUT, pin 23),
+ * which on the CoreS3 is G13, the speaker's I2S data; "CoreS3" is the old
+ * G25 position (pin 8), which on the CoreS3 is G5. The switch goes on the
+ * CoreS3 side and the data runs out of GPIO 5. They run from the M-Bus 5 V
+ * rail, which the CoreS3 keeps off until asked: BOOST_EN (AW9523 P1_7) and
  * BUS_OUT_EN (P0_1), the latter pulsed up first so the inrush does not
  * drop the PMIC out on a weak USB supply (M5Unified does the same). */
 
-#define RGB_GPIO 15
+#define RGB_GPIO 5
 #define RGB_COUNT 10
 #define EXP_BUS_OUT_EN IO_EXPANDER_PIN_NUM_1
 #define EXP_BOOST_EN IO_EXPANDER_PIN_NUM_15
@@ -277,6 +280,9 @@ static void bus_5v(bool on)
         }
         esp_io_expander_set_level(io, EXP_BUS_OUT_EN, 1);
         vTaskDelay(pdMS_TO_TICKS(20)); /* let the strip's supply settle before data */
+        uint32_t lv = 0;
+        esp_io_expander_get_level(io, 0xFFFF, &lv);
+        ESP_LOGI(TAG, "bus 5V on: expander pins 0x%04lx", (unsigned long)lv);
     } else {
         esp_io_expander_set_level(io, EXP_BUS_OUT_EN, 0);
         esp_io_expander_set_level(io, EXP_BOOST_EN, 0);
@@ -314,7 +320,8 @@ static void rgb_apply(void)
     bus_5v(true);
     uint32_t r = ((s_rgb >> 16) & 0xFF) * v / 255, g = ((s_rgb >> 8) & 0xFF) * v / 255, b = (s_rgb & 0xFF) * v / 255;
     for (int i = 0; i < RGB_COUNT; i++) led_strip_set_pixel(s_strip, (uint32_t)i, r, g, b);
-    led_strip_refresh(s_strip);
+    esp_err_t err = led_strip_refresh(s_strip);
+    ESP_LOGI(TAG, "side LEDs: level %lu rgb %06lx (%s)", v, (unsigned long)s_rgb, esp_err_to_name(err));
 }
 
 /* `brightness` is the deck's 0..100 keyboard light level (OFF 0, LOW 3,
