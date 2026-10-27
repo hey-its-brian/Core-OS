@@ -6,7 +6,8 @@
 - [x] Faces Bottom3 side LEDs in the accent color (OFF / LOW / HIGH in SYSTEM)
 - [x] Shell fitted to 320x240: status bar, 3 x 3 home grid, boot POST, modals
 - [x] SYSTEM and CALC
-- [ ] First boot on the hardware: keyboard, battery, RTC, SD, Wi-Fi, OTA check
+- [x] First boot on the hardware: keyboard, touch, RTC, SD, side LEDs (2026-10-27)
+- [ ] Wi-Fi join, battery readout and OTA check on the hardware
 - [ ] Release process (signed OTA images, GitHub releases)
 
 ## v0.2
