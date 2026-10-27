@@ -222,7 +222,7 @@ bool notes_sanitize(const char *in, char *out, size_t n)
 }
 
 static const char s_readme[] =
-    "# DECK//OS NOTES\n"
+    "# CORE//OS NOTES\n"
     "\n"
     "Markdown notes, stored as plain `.md` files. Pull the SD card and they open anywhere.\n"
     "\n"
@@ -230,10 +230,9 @@ static const char s_readme[] =
     "\n"
     "| Keys | Action |\n"
     "|---|---|\n"
-    "| `Ctrl+S` | save (also autosaves) |\n"
-    "| `Ctrl+P` | flip between edit and preview |\n"
-    "| `Ctrl+T` | split: editor and preview side by side |\n"
-    "| `Esc` | save and close |\n"
+    "| `Alt+E` | save (also autosaves) |\n"
+    "| `Alt+V` | flip between edit and view |\n"
+    "| `del` in view | save and close |\n"
     "\n"
     "## What renders\n"
     "\n"

@@ -14,7 +14,7 @@ CALC work; the other modules show their manifests until they are ported.
 |-----------|--------|-------|
 | SYSTEM    | ready  | brightness, scanlines, boot POST, saver, side LEDs, accent, Wi-Fi join, timezone, clock, hardware readout, OTA updates |
 | CALC      | ready  | expression evaluator, tape, hex/oct/bin, SCI and PROG keypads |
-| NOTES     | v0.2   | markdown notes and the Obsidian vault sync |
+| NOTES     | ready  | markdown notes, folders, editor and preview, Obsidian vault sync (LiveSync over CouchDB) |
 | WEATHER   | v0.2   | Open-Meteo |
 | FILES     | v0.3   | SD browser and the browser portal |
 | PLAYER    | v0.3   | MP3 player on the CoreS3 speaker |

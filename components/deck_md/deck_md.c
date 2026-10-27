@@ -202,7 +202,7 @@ static void list_item(ctx_t *c, const MD_BLOCK_LI_DETAIL *d)
     lv_obj_t *row = deck_box(top(c));
     lv_obj_set_width(row, LV_PCT(100));
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_style_pad_column(row, 10, 0);
+    lv_obj_set_style_pad_column(row, 5, 0);
 
     char mark[16];
     lv_color_t mc = g_pal.accent;
@@ -242,7 +242,7 @@ static int enter_block(MD_BLOCKTYPE type, void *detail, void *ud)
                                  : level == 3 ? g_font.disp_s : g_font.mono_m;
             lv_color_t col = level <= 2 ? g_pal.accent : g_pal.accent2;
             text_block(c, top(c), f, col);
-            lv_obj_set_style_margin_top(c->spans, c->blocks > 1 ? 10 : 0, 0);
+            lv_obj_set_style_margin_top(c->spans, c->blocks > 1 ? 5 : 0, 0);
             break;
         }
 
@@ -254,8 +254,8 @@ static int enter_block(MD_BLOCKTYPE type, void *detail, void *ud)
             lv_obj_set_style_border_side(q, LV_BORDER_SIDE_LEFT, 0);
             lv_obj_set_style_border_width(q, 4, 0);
             lv_obj_set_style_border_color(q, g_pal.accent2, 0);
-            lv_obj_set_style_pad_all(q, 12, 0);
-            lv_obj_set_style_pad_left(q, 18, 0);
+            lv_obj_set_style_pad_all(q, 6, 0);
+            lv_obj_set_style_pad_left(q, 10, 0);
             push(c, q);
             break;
         }
@@ -280,7 +280,7 @@ static int enter_block(MD_BLOCKTYPE type, void *detail, void *ud)
             lv_obj_set_size(hr, LV_PCT(100), 2);
             lv_obj_set_style_bg_color(hr, g_pal.line, 0);
             lv_obj_set_style_bg_opa(hr, LV_OPA_COVER, 0);
-            lv_obj_set_style_margin_ver(hr, 8, 0);
+            lv_obj_set_style_margin_ver(hr, 4, 0);
             break;
         }
 
@@ -293,7 +293,7 @@ static int enter_block(MD_BLOCKTYPE type, void *detail, void *ud)
             lv_obj_set_style_bg_opa(box, LV_OPA_COVER, 0);
             lv_obj_set_style_border_width(box, 1, 0);
             lv_obj_set_style_border_color(box, g_pal.line, 0);
-            lv_obj_set_style_pad_all(box, 14, 0);
+            lv_obj_set_style_pad_all(box, 6, 0);
             c->code_label = deck_label(box, g_font.mono_m, type == MD_BLOCK_HTML ? g_pal.dim : g_pal.ok, "");
             lv_obj_set_width(c->code_label, LV_PCT(100));
             if (type == MD_BLOCK_CODE) {
@@ -343,7 +343,7 @@ static int enter_block(MD_BLOCKTYPE type, void *detail, void *ud)
         case MD_BLOCK_TD: {
             lv_obj_t *cell = deck_box(top(c));
             lv_obj_set_width(cell, LV_PCT(100 / c->table_cols));
-            lv_obj_set_style_pad_all(cell, 8, 0);
+            lv_obj_set_style_pad_all(cell, 4, 0);
             text_block(c, cell, g_font.mono_m, type == MD_BLOCK_TH ? g_pal.accent : g_pal.text);
             MD_ALIGN a = ((MD_BLOCK_TD_DETAIL *)detail)->align;
             if (a == MD_ALIGN_CENTER) lv_spangroup_set_align(c->spans, LV_TEXT_ALIGN_CENTER);
@@ -473,7 +473,7 @@ int deck_md_render(lv_obj_t *parent, const char *src, size_t len)
 {
     lv_obj_clean(parent);
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_row(parent, 12, 0);
+    lv_obj_set_style_pad_row(parent, 6, 0);
 
     ctx_t c = {0};
     c.stack[0] = parent;
