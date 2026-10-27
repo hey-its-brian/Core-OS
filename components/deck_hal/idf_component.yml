@@ -1,0 +1,7 @@
+dependencies:
+  idf: ">=5.4"
+  # CoreS3 board support: AXP2101 rails, AW9523B expander, ILI9342C, FT6336U, SD.
+  espressif/m5stack_core_s3: "^4.1"
+  espressif/esp_lvgl_port: "^2"
+  # The Faces Bottom3 side LEDs (SK6812) over RMT.
+  espressif/led_strip: "^3"

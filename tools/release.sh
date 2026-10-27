@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Cut a Core//OS release from main.
+#
+#   tools/release.sh 0.6.0 notes.md ["Release title"]
+#
+# Sets the version (PROJECT_VER + DECK_VERSION), commits, builds, makes the
+# two images, tags vX.Y.Z and publishes a GitHub release with:
+#   cores3-cyberdeck-vX.Y.Z-full.bin  USB / web flasher, written at 0x0
+#   cores3-cyberdeck-vX.Y.Z-ota.bin   app image for over-the-air updates
+# Publishing the release would trigger a web flasher deploy (none yet).
+#
+# The app is signed with the OTA signing key (RSA-3072, Secure Boot v2 format)
+# before the images are made: a deck running a signed build only installs
+# updates signed with the same key. Keep the key out of the repo and backed
+# up; without it, signed decks can still be updated over USB, not over the air.
+#   DECK_SIGNING_KEY  default ~/.config/deck-os/ota_signing_key.pem
+#   --prerelease      as the 4th argument publishes a beta (version X.Y.Z-beta.N)
+#
+# Signed-update verification lives in sdkconfig.release, not sdkconfig.defaults
+# (so a fresh clone builds without a key). This script applies it to the local
+# sdkconfig when missing and refuses to release without it: an unverifying
+# release would let any image be installed over the air on decks running it.
+set -euo pipefail
+
+ver="${1:?usage: $0 X.Y.Z notes.md}"
+notes="${2:?usage: $0 X.Y.Z notes.md}"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+
+pre="${4:-}"
+key="${DECK_SIGNING_KEY:-$HOME/.config/deck-os/ota_signing_key.pem}"
+if [[ "$pre" == "--prerelease" ]]; then
+    [[ "$ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.]+$ ]] || { echo "beta version must be X.Y.Z-tag"; exit 1; }
+else
+    [[ "$ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "version must be X.Y.Z"; exit 1; }
+    [[ "$(git branch --show-current)" == "main" ]] || { echo "release from main"; exit 1; }
+fi
+[[ -f "$key" ]] || { echo "no signing key at $key (set DECK_SIGNING_KEY)"; exit 1; }
+[[ -z "$(git status --porcelain)" ]] || { echo "working tree not clean"; exit 1; }
+[[ -f "$notes" ]] || { echo "no notes file: $notes"; exit 1; }
+
+# shellcheck disable=SC1091
+. "${IDF_PATH:-$HOME/esp/esp-idf-v5.5}/export.sh" >/dev/null 2>&1
+signed_config() {
+    grep -qx "CONFIG_SECURE_SIGNED_APPS_NO_SECURE_BOOT=y" sdkconfig 2>/dev/null &&
+        grep -qx "CONFIG_SECURE_SIGNED_APPS_RSA_SCHEME=y" sdkconfig &&
+        grep -qx "CONFIG_SECURE_SIGNED_ON_UPDATE_NO_SECURE_BOOT=y" sdkconfig
+}
+if ! signed_config; then
+    echo "applying sdkconfig.release (signed updates)"
+    [[ -f sdkconfig ]] && sed -i '' -E '/CONFIG_SECURE_SIGNED|CONFIG_SECURE_BOOT_BUILD_SIGNED/d' sdkconfig
+    idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release" reconfigure >/dev/null
+fi
+signed_config || { echo "sdkconfig still lacks signed-update verification, not releasing"; exit 1; }
+
+sed -i '' -E "s/set\(PROJECT_VER \"[^\"]*\"\)/set(PROJECT_VER \"$ver\")/" CMakeLists.txt
+sed -i '' -E "s/#define DECK_VERSION \"[^\"]*\"/#define DECK_VERSION \"$ver\"/" components/deck_core/include/deck_shell.h
+git diff --quiet || git commit -qam "v$ver"   # re-runs after a failed attempt keep the commit
+
+idf.py build >/dev/null
+# Sign the app in place, then build the full image from the signed app.
+espsecure.py sign_data --version 2 --keyfile "$key" --output build/app-signed.bin build/cores3_cyberdeck.bin >/dev/null
+mv build/app-signed.bin build/cores3_cyberdeck.bin
+espsecure.py verify_signature --version 2 --keyfile "$key" build/cores3_cyberdeck.bin >/dev/null
+idf.py merge-bin -o "cores3-cyberdeck-v$ver-full.bin" >/dev/null
+
+out="$(mktemp -d)"
+cp "build/cores3-cyberdeck-v$ver-full.bin" "$out/"
+cp build/cores3_cyberdeck.bin "$out/cores3-cyberdeck-v$ver-ota.bin"
+# The ELF decodes crash backtraces from the field (no secrets in it; the source is public).
+cp build/cores3_cyberdeck.elf "$out/cores3-cyberdeck-v$ver.elf"
+# (grep without -q: with pipefail, -q exiting early makes the pipeline "fail")
+strings "$out/cores3-cyberdeck-v$ver-ota.bin" | grep -x "$ver" >/dev/null || { echo "image does not carry version $ver"; exit 1; }
+
+git push -q origin "$(git branch --show-current)"
+git tag -a "v$ver" -m "v$ver"
+git push -q origin "v$ver"
+gh release create "v$ver" "$out"/*.bin "$out"/*.elf --title "${3:-v$ver}" --notes-file "$notes" ${pre:+--prerelease}
+echo "released v$ver"
