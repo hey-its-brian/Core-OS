@@ -159,6 +159,7 @@ bool hal_headphones(void) { return getenv("DECK_SIM_HEADPHONES") != NULL; }
 const char *hal_storage_root(void) { return DECK_SIM_SDCARD; }
 bool hal_storage_is_sd(void) { return true; }
 bool hal_storage_mount_sd(void) { return true; }
+bool hal_storage_drop_sd(void) { return false; }
 void hal_storage_status(char *buf, size_t n) { snprintf(buf, n, "SD 29.7 / 31.9 GB FREE"); }
 
 bool hal_sd_mounted(void) { return true; }

@@ -115,6 +115,9 @@ bool        hal_storage_is_sd(void);
  * no card answers, so call it from a tap or a module start, not a timer. */
 bool hal_storage_mount_sd(void);
 
+/* Unmount a card that mounted but fails reads or writes; true if one was dropped. */
+bool hal_storage_drop_sd(void);
+
 /* "SD 29.6 / 31.9 GB FREE", or the mount error names when nothing mounted. */
 void hal_storage_status(char *buf, size_t n);
 

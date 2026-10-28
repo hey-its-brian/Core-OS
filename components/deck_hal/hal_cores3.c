@@ -15,10 +15,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include "esp_err.h" /* bsp/display.h forgets it */
 #include "bsp/display.h"
 #include "bsp/m5stack_core_s3.h"
+#include "driver/gpio.h"
+#include "soc/gpio_struct.h"
 #include "driver/i2c_master.h"
 #include "esp_chip_info.h"
 #include "esp_efuse.h"
@@ -561,9 +564,39 @@ static char s_flash_err[24]; /* same for the internal FAT partition */
  * answers at 10, so a failed mount gets one slower retry. After a failed
  * esp_vfs_fat_sdspi_mount the SDSPI device is removed again, so trying
  * again later (a card inserted after boot) is safe. */
+static bool sd_write_check(void)
+{
+    static const char probe[] = HAL_SD_MOUNT "/.coreos";
+    FILE *f = fopen(probe, "wb");
+    if (f == NULL) return false;
+    bool ok = fputs("ok", f) >= 0;
+    ok      = (fclose(f) == 0) && ok;
+    char back[4] = "";
+    f           = fopen(probe, "rb");
+    if (f) {
+        ok = fgets(back, sizeof(back), f) != NULL && ok;
+        fclose(f);
+    } else {
+        ok = false;
+    }
+    unlink(probe);
+    return ok && strcmp(back, "ok") == 0;
+}
+
 bool hal_storage_mount_sd(void)
 {
     if (s_sd_ok) return true;
+    /* GPIO 35 is the LCD's D/C line and the card's MISO. esp_lcd drives it
+     * only during LCD transfers; the rest of the time it must idle high, as
+     * the SD protocol expects, or a card that tri-states until it answers
+     * leaves the host reading noise. */
+    gpio_set_pull_mode(BSP_SD_SPI_MISO, GPIO_PULLUP_ONLY);
+    /* The BSP switches the slot's supply on right before CMD0. Give a card
+     * that was just powered its ramp and the spec's 1 ms before talking. */
+    bsp_feature_enable(BSP_FEATURE_SD, true);
+    vTaskDelay(pdMS_TO_TICKS(50));
+    ESP_LOGI(TAG, "SD probe: gpio35 oe=%d level=%d", (int)((GPIO.enable1.val >> 3) & 1), gpio_get_level(BSP_SD_SPI_MISO));
+    bool locked = lvgl_port_lock(1000); /* no LCD traffic on the shared bus while the card initialises */
     esp_vfs_fat_sdmmc_mount_config_t mcfg = {
         .format_if_mount_failed = false,
         .max_files              = 8,
@@ -579,6 +612,7 @@ bool hal_storage_mount_sd(void)
         err                  = bsp_sdcard_sdspi_mount(&cfg);
         if (err != ESP_OK) ESP_LOGW(TAG, "no SD card at %d kHz (%s)", freqs[i], esp_err_to_name(err));
     }
+    if (locked) lvgl_port_unlock();
     if (err == ESP_OK) {
         s_card  = bsp_sdcard_get_handle();
         s_sd_ok = s_card != NULL;
@@ -589,6 +623,17 @@ bool hal_storage_mount_sd(void)
         s_sd_err[0] = '\0';
     } else {
         snprintf(s_sd_err, sizeof(s_sd_err), "%s", esp_err_to_name(err));
+    }
+    /* A card can mount (one good read of the boot sector) and still corrupt
+     * everything after. Prove it with a write before anyone builds on it;
+     * otherwise let go of it so the internal flash takes over. The BSP's own
+     * unmount would also free the SPI bus the LCD is on, so unmount directly. */
+    if (s_sd_ok && !sd_write_check()) {
+        ESP_LOGW(TAG, "SD card mounted but a write failed, falling back to flash");
+        esp_vfs_fat_sdcard_unmount(HAL_SD_MOUNT, s_card);
+        s_card  = NULL;
+        s_sd_ok = false;
+        snprintf(s_sd_err, sizeof(s_sd_err), "RW FAIL");
     }
     return s_sd_ok;
 }
@@ -614,6 +659,18 @@ static void flash_fs_mount(void)
         snprintf(s_flash_err, sizeof(s_flash_err), "%s", esp_err_to_name(err));
         ESP_LOGW(TAG, "internal storage not mounted (%s)", esp_err_to_name(err));
     }
+}
+
+/* Give up on a mounted card that turned out unusable. */
+bool hal_storage_drop_sd(void)
+{
+    if (!s_sd_ok) return false;
+    ESP_LOGW(TAG, "dropping the SD card: it stopped answering properly");
+    esp_vfs_fat_sdcard_unmount(HAL_SD_MOUNT, s_card);
+    s_card  = NULL;
+    s_sd_ok = false;
+    snprintf(s_sd_err, sizeof(s_sd_err), "RW FAIL");
+    return true;
 }
 
 const char *hal_storage_root(void)
@@ -912,6 +969,8 @@ bool deck_hal_init(void)
         return false;
     }
     esp_log_level_set("M5Stack Core S3", ESP_LOG_WARN); /* the BSP logs every backlight change */
+
+    bsp_feature_enable(BSP_FEATURE_SD, true); /* card supply up early, mount comes later */
 
     if (!display_init()) return false;
     hal_backlight_set((uint8_t)hal_cfg_get_i32("bright", 80));

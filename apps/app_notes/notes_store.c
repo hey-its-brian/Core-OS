@@ -47,7 +47,12 @@ const char *notes_root(void)
     struct stat st;
     if (stat(s_root, &st) != 0) {
         mkdir(root, 0755); /* simulator: sim/sdcard may not exist yet */
-        if (mkdir(s_root, 0755) != 0 && errno != EEXIST) return NULL;
+        if (mkdir(s_root, 0755) != 0 && errno != EEXIST) {
+            /* The card mounted but will not take a folder: a flaky card.
+             * Drop it so the internal flash answers from here on. */
+            if (hal_storage_is_sd() && hal_storage_drop_sd() && hal_storage_root()) return notes_root();
+            return NULL;
+        }
     }
     return s_root;
 }
