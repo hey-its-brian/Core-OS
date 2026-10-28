@@ -103,6 +103,26 @@ static bool read_release(const cJSON *rel)
     return true;
 }
 
+/* True when GitHub answers but the repository has no published release
+ * (the "latest" endpoint is a 404 then, which looks like any other failure). */
+static bool repo_has_no_releases(void)
+{
+    char *body  = net_http_get(URL_LIST, NULL);
+    cJSON *root = body ? cJSON_Parse(body) : NULL;
+    free(body);
+    bool none = false;
+    if (root && cJSON_IsArray(root)) {
+        none = true;
+        const cJSON *rel;
+        cJSON_ArrayForEach(rel, root)
+        {
+            if (!cJSON_IsTrue(cJSON_GetObjectItemCaseSensitive(rel, "draft"))) none = false;
+        }
+    }
+    cJSON_Delete(root);
+    return none;
+}
+
 static void check_task(void *arg)
 {
     bool pre    = (bool)(intptr_t)arg;
@@ -127,7 +147,13 @@ static void check_task(void *arg)
     cJSON_Delete(root);
 
     if (!ok) {
-        fail(net_state() == NET_CONNECTED ? "could not read releases from GitHub" : "no network");
+        if (net_state() != NET_CONNECTED) {
+            fail("no network");
+        } else if (repo_has_no_releases()) {
+            fail("no releases published on GitHub yet");
+        } else {
+            fail("could not read releases from GitHub");
+        }
     } else if (ota_version_cmp(s_latest, s_running) <= 0) {
         ESP_LOGI(TAG, "up to date: running %s, latest release %s", s_running, s_latest);
         s_state = OTA_UP_TO_DATE;
