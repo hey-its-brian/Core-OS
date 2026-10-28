@@ -14,6 +14,15 @@ void deck_home_add_app(deck_app_t *app)
     s_tiles[s_ntiles++] = (deck_tile_t){.app = app};
 }
 
+void deck_home_add_blank(void)
+{
+    if (s_ntiles >= DECK_HOME_TILES) {
+        LV_LOG_ERROR("cannot add home tile");
+        return;
+    }
+    s_tiles[s_ntiles++] = (deck_tile_t){0};
+}
+
 deck_group_t *deck_home_add_group(const char *name, const char *tagline, const char *icon)
 {
     if (s_ntiles >= DECK_HOME_TILES || s_ngroups >= DECK_HOME_TILES) {

@@ -40,7 +40,7 @@ static void open_item(const deck_tile_t *it)
 {
     if (it->group) {
         deck_shell_open_group(it->group);
-    } else {
+    } else if (it->app) {
         deck_shell_launch(it->app);
     }
 }
@@ -77,6 +77,12 @@ static lv_obj_t *build_tile(lv_obj_t *parent, const deck_tile_t *it, int index)
 
     lv_obj_t *t = deck_panel(parent, DECK_CUT_TL | DECK_CUT_BR, 7);
     lv_obj_set_size(t, TILE, TILE);
+    if (app == NULL && grp == NULL) {
+        /* Empty slot: a dim outline, nothing inside, nothing to tap. */
+        deck_panel_set_outline(t, g_pal.grid);
+        deck_panel_set_fill(t, g_pal.bg);
+        return t;
+    }
     lv_obj_add_flag(t, LV_OBJ_FLAG_CLICKABLE);
     deck_panel_set_hazard(t, offline);
     lv_obj_set_style_pad_all(t, 0, 0);

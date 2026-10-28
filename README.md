@@ -17,7 +17,7 @@ CALC work; the other modules show their manifests until they are ported.
 | NOTES     | ready  | markdown notes, folders, editor and preview, Obsidian vault sync (LiveSync over CouchDB) |
 | WEATHER   | v0.2   | Open-Meteo |
 | FILES     | v0.3   | SD browser and the browser portal |
-| CAMERA    | ready  | UnitCamS3 viewfinder over Wi-Fi: live view, photos to storage, gallery |
+| (open)    |        | a free tile; the UnitCamS3 CAMERA module lives on the `camera` branch |
 | NET TOOLS | v0.4   | scanner, ping, LAN sweep, speed test |
 | TERMINAL  | v0.5   | SSH and Ollama chat |
 | RF WATCH  | v0.6   | the RF Sentinel board |
@@ -31,11 +31,6 @@ CALC work; the other modules show their manifests until they are ported.
   5 V rail, LED data on G5 with the base's LED IO switch on its "CoreS3" side.
 - Faces Keyboard3: STM32 at I2C 0x08 on the system bus (G12 / G11), one byte
   per key, polled every 12 ms and translated to HID usages in `deck_hal`.
-- UnitCamS3 or UnitCamS3-5MP on the Grove port. The Grove only powers it:
-  pictures come over Wi-Fi from the unit's stock firmware (`/api/v1/capture`
-  and friends). CAM AP in the module hops the deck onto the unit's own
-  network (`UnitCAMS3-WiFi`, host 192.168.4.1) and back home; or point the
-  unit at your network from its web page and set its address with HOST.
 
 ## Keys
 
@@ -46,7 +41,7 @@ The Keyboard3 has no Esc or Ctrl. On this deck:
 | del            | back / close (deletes inside text fields) |
 | SYM+0          | Esc |
 | ALT+1..9       | open a home tile |
-| ALT+letter     | jump to a module (T N C W M F R A S) |
+| ALT+letter     | jump to a module (T N C W F R A S) |
 | ALT+SPACE      | back to the deck from anywhere |
 | ALT+0          | sleep the screen (or tap the clock) |
 | ALT+H          | shortcut list |

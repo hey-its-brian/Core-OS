@@ -209,11 +209,7 @@ void deck_shell_shortcuts(void)
         "CALC\n"
         "  ENTER evaluate  UP/DOWN recall\n"
         "  ALT+D deg/rad   ALT+K keypad\n"
-        "  ALT+L clear tape\n"
-        "\n"
-        "CAMERA\n"
-        "  ENTER shoot  S size  G gallery\n"
-        "  A cam Wi-Fi / home  H host  L led",
+        "  ALT+L clear tape",
     };
     deck_modal_info("SHORTCUTS", cols, 1);
 }
@@ -301,7 +297,7 @@ bool deck_shell_key(const deck_key_t *k)
             const deck_tile_t *t = deck_home_tile((size_t)(k->code - HID_1));
             if (t && t->group) {
                 deck_shell_open_group(t->group);
-            } else if (t) {
+            } else if (t && t->app) {
                 deck_shell_launch(t->app);
             }
             return true;

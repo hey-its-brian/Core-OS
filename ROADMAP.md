@@ -29,3 +29,7 @@
 ## Later
 - Battery gauge calibration against the AXP2101 fuel gauge
 - Keyboard3 firmware check (IAP) from SYSTEM
+- CAMERA: the UnitCamS3 module (viewfinder, photos, gallery, Wi-Fi hop onto
+  the unit's AP) is finished on the `camera` branch. Shelved 2026-10-28 because
+  the Grove cable only powers the unit; a cable-only version needs custom
+  firmware on the camera streaming JPEGs over UART. Its home tile is left open.

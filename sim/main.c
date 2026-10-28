@@ -28,7 +28,6 @@
 
 #include "app_calc.h"
 #include "app_notes.h"
-#include "app_camera.h"
 #include "app_files.h"
 #include "app_net.h"
 #include "app_rf.h"
@@ -312,7 +311,6 @@ int main(int argc, char **argv)
     deck_app_register(app_notes());
     deck_app_register(app_calc());
     deck_app_register(app_weather());
-    deck_app_register(app_camera());
     deck_app_register(app_files());
     deck_app_register(app_net());
     deck_app_register(app_rf());
@@ -325,7 +323,7 @@ int main(int argc, char **argv)
     deck_home_add_app(app_calc());
     deck_home_add_app(app_weather());
     deck_home_add_app(app_files());
-    deck_home_add_app(app_camera());
+    deck_home_add_blank(); /* open slot */
     deck_home_add_app(app_net());
     deck_home_add_app(app_rf());
     deck_home_add_app(app_sys());

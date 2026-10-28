@@ -25,13 +25,14 @@ typedef struct {
     size_t count;
 } deck_group_t;
 
-/* One home tile: exactly one of the two is set. */
+/* One home tile: a module, a group, or neither (an empty slot). */
 typedef struct {
     deck_app_t *app;
     deck_group_t *group;
 } deck_tile_t;
 
 void          deck_home_add_app(deck_app_t *app);
+void          deck_home_add_blank(void);
 deck_group_t *deck_home_add_group(const char *name, const char *tagline, const char *icon);
 void          deck_group_add(deck_group_t *group, deck_app_t *app);
 
