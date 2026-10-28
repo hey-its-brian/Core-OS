@@ -1,6 +1,6 @@
 # Core//OS roadmap
 
-## v0.1.0 (in progress)
+## v0.1.0 (2026-10-28)
 - [x] CoreS3 HAL on the Espressif BSP: display, touch, backlight, SD, settings
 - [x] Faces Keyboard3 driver with HID translation (del = back, SYM+0 = Esc)
 - [x] Faces Bottom3 side LEDs in the accent color (OFF / LOW / HIGH in SYSTEM)
@@ -8,10 +8,10 @@
 - [x] SYSTEM and CALC
 - [x] First boot on the hardware: keyboard, touch, RTC, SD, side LEDs (2026-10-27)
 - [ ] Wi-Fi join, battery readout and OTA check on the hardware
-- [ ] Release process (signed OTA images, GitHub releases)
+- [x] Release process (signed OTA images, GitHub releases)
 
 ## v0.2
-- NOTES with the Obsidian vault sync
+- [x] NOTES with the Obsidian vault sync (landed early, in v0.1.0)
 - WEATHER with its home tile widget
 
 ## v0.3
