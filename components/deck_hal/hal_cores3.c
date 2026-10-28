@@ -80,6 +80,40 @@ static bool display_init(void)
     return true;
 }
 
+/* The Espressif FT5x06 driver raises the touch threshold to 70 and lets the
+ * controller drop into its slow "monitor" scan after 2 s idle, so light or
+ * quick taps go missing when polled. M5's own driver leaves the chip at its
+ * factory tuning and only picks polling mode. Do the same: reset it through
+ * the AW9523 and set just the mode registers. */
+#define TOUCH_ADDR 0x38
+static void touch_tune(void)
+{
+    bsp_feature_enable(BSP_FEATURE_TOUCH, false);
+    vTaskDelay(pdMS_TO_TICKS(10));
+    bsp_feature_enable(BSP_FEATURE_TOUCH, true);
+    vTaskDelay(pdMS_TO_TICKS(300)); /* FT6336U start-up */
+    i2c_device_config_t dc = {.dev_addr_length = I2C_ADDR_BIT_LEN_7, .device_address = TOUCH_ADDR, .scl_speed_hz = 400000};
+    i2c_master_dev_handle_t dev;
+    if (i2c_master_bus_add_device(bsp_i2c_get_handle(), &dc, &dev) != ESP_OK) return;
+    static const uint8_t regs[][2] = {
+        {0x00, 0x00}, /* working mode */
+        {0xA4, 0x00}, /* INT polling mode */
+        {0x86, 0x00}, /* stay in active scan, never drop to monitor mode */
+    };
+    for (size_t i = 0; i < sizeof(regs) / sizeof(regs[0]); i++) {
+        i2c_master_transmit(dev, regs[i], 2, 50);
+    }
+    i2c_master_bus_rm_device(dev);
+
+    /* A finger on a 2 inch panel wobbles; 10 px is less than 2 mm here, and
+     * a tap that moves that far turned into a scroll. */
+    lv_indev_t *tp = bsp_display_get_input_dev();
+    if (tp && lvgl_port_lock(100)) {
+        lv_indev_set_scroll_limit(tp, 16);
+        lvgl_port_unlock();
+    }
+}
+
 static uint8_t s_backlight = 80;
 static bool s_display_on   = true;
 
@@ -684,16 +718,28 @@ const char *hal_storage_root(void)
  * read off the deck without a serial console. */
 void hal_storage_status(char *buf, size_t n)
 {
+    /* Free space is a FAT walk; on a big or slow card that stalls the UI
+     * task, and SYSTEM asks every second. Remember it for a while. */
+    static uint64_t total, free_b;
+    static int64_t at = -1;
+    static bool was_sd;
+    int64_t now = esp_timer_get_time();
+    if (at < 0 || now - at > 10 * 1000000 || was_sd != s_sd_ok) {
+        total = free_b = 0;
+        if (s_sd_ok) {
+            esp_vfs_fat_info(HAL_SD_MOUNT, &total, &free_b);
+        } else if (s_flash_ok) {
+            esp_vfs_fat_info(FLASH_MOUNT, &total, &free_b);
+        }
+        at     = now;
+        was_sd = s_sd_ok;
+    }
     if (s_sd_ok) {
-        uint64_t total = 0, free_b = 0;
-        esp_vfs_fat_info(HAL_SD_MOUNT, &total, &free_b);
         snprintf(buf, n, "SD %.1f / %.1f GB FREE", (double)free_b / 1e9, (double)total / 1e9);
         return;
     }
     const char *sd = s_sd_err[0] ? s_sd_err : "NONE";
     if (s_flash_ok) {
-        uint64_t total = 0, free_b = 0;
-        esp_vfs_fat_info(FLASH_MOUNT, &total, &free_b);
         snprintf(buf, n, "SD %s, FLASH %.1f MB FREE", sd, (double)free_b / 1e6);
     } else {
         snprintf(buf, n, "SD %s, FLASH %s", sd, s_flash_err[0] ? s_flash_err : "NONE");
@@ -973,6 +1019,7 @@ bool deck_hal_init(void)
     bsp_feature_enable(BSP_FEATURE_SD, true); /* card supply up early, mount comes later */
 
     if (!display_init()) return false;
+    touch_tune();
     hal_backlight_set((uint8_t)hal_cfg_get_i32("bright", 80));
 
     tz_apply((int)hal_cfg_get_i32("tz", DECK_TZ_DEFAULT)); /* before the RTC is read as local time */

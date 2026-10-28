@@ -18,7 +18,7 @@
 
 static const char *TAG = "ota";
 
-#define REPO "hey-its-brian/cores3-cyberdeck"
+#define REPO "hey-its-brian/Core-OS"
 #define URL_LATEST "https://api.github.com/repos/" REPO "/releases/latest"
 #define URL_LIST "https://api.github.com/repos/" REPO "/releases?per_page=8"
 #define ASSET_PREFIX "https://github.com/" REPO "/releases/download/" /* only ever download from here */

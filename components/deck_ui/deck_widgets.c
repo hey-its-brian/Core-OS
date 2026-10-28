@@ -282,6 +282,7 @@ lv_obj_t *deck_button(lv_obj_t *parent, const char *text, const lv_font_t *font)
     lv_obj_set_size(b, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_style_min_height(b, 24, 0); /* still a touch target */
     lv_obj_set_style_min_width(b, 40, 0);
+    lv_obj_set_ext_click_area(b, 4);       /* fingertip slop on a small panel */
 
     lv_obj_set_style_text_color(b, g_pal.text, 0);
     lv_obj_t *l = lv_label_create(b);

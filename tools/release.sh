@@ -5,8 +5,8 @@
 #
 # Sets the version (PROJECT_VER + DECK_VERSION), commits, builds, makes the
 # two images, tags vX.Y.Z and publishes a GitHub release with:
-#   cores3-cyberdeck-vX.Y.Z-full.bin  USB / web flasher, written at 0x0
-#   cores3-cyberdeck-vX.Y.Z-ota.bin   app image for over-the-air updates
+#   core-os-vX.Y.Z-full.bin  USB / web flasher, written at 0x0
+#   core-os-vX.Y.Z-ota.bin   app image for over-the-air updates
 # Publishing the release would trigger a web flasher deploy (none yet).
 #
 # The app is signed with the OTA signing key (RSA-3072, Secure Boot v2 format)
@@ -62,15 +62,15 @@ idf.py build >/dev/null
 espsecure.py sign_data --version 2 --keyfile "$key" --output build/app-signed.bin build/cores3_cyberdeck.bin >/dev/null
 mv build/app-signed.bin build/cores3_cyberdeck.bin
 espsecure.py verify_signature --version 2 --keyfile "$key" build/cores3_cyberdeck.bin >/dev/null
-idf.py merge-bin -o "cores3-cyberdeck-v$ver-full.bin" >/dev/null
+idf.py merge-bin -o "core-os-v$ver-full.bin" >/dev/null
 
 out="$(mktemp -d)"
-cp "build/cores3-cyberdeck-v$ver-full.bin" "$out/"
-cp build/cores3_cyberdeck.bin "$out/cores3-cyberdeck-v$ver-ota.bin"
+cp "build/core-os-v$ver-full.bin" "$out/"
+cp build/cores3_cyberdeck.bin "$out/core-os-v$ver-ota.bin"
 # The ELF decodes crash backtraces from the field (no secrets in it; the source is public).
-cp build/cores3_cyberdeck.elf "$out/cores3-cyberdeck-v$ver.elf"
+cp build/cores3_cyberdeck.elf "$out/core-os-v$ver.elf"
 # (grep without -q: with pipefail, -q exiting early makes the pipeline "fail")
-strings "$out/cores3-cyberdeck-v$ver-ota.bin" | grep -x "$ver" >/dev/null || { echo "image does not carry version $ver"; exit 1; }
+strings "$out/core-os-v$ver-ota.bin" | grep -x "$ver" >/dev/null || { echo "image does not carry version $ver"; exit 1; }
 
 git push -q origin "$(git branch --show-current)"
 git tag -a "v$ver" -m "v$ver"
