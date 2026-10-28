@@ -554,15 +554,31 @@ void hal_tz_set(int index)
 
 /* ---- Storage ------------------------------------------------------------- */
 
-static void sd_mount(void)
+static char s_sd_err[24];    /* last SD mount error name, "" when mounted */
+static char s_flash_err[24]; /* same for the internal FAT partition */
+
+/* The card is on the LCD's SPI bus. A card that fails at 20 MHz sometimes
+ * answers at 10, so a failed mount gets one slower retry. After a failed
+ * esp_vfs_fat_sdspi_mount the SDSPI device is removed again, so trying
+ * again later (a card inserted after boot) is safe. */
+bool hal_storage_mount_sd(void)
 {
+    if (s_sd_ok) return true;
     esp_vfs_fat_sdmmc_mount_config_t mcfg = {
         .format_if_mount_failed = false,
         .max_files              = 8,
         .allocation_unit_size   = 16 * 1024,
     };
-    bsp_sdcard_cfg_t cfg = {.mount = &mcfg};
-    esp_err_t err        = bsp_sdcard_sdspi_mount(&cfg);
+    static const int freqs[] = {SDMMC_FREQ_DEFAULT, 10000};
+    esp_err_t err            = ESP_FAIL;
+    for (size_t i = 0; i < sizeof(freqs) / sizeof(freqs[0]) && err != ESP_OK; i++) {
+        sdmmc_host_t host;
+        bsp_sdcard_get_sdspi_host(SDMMC_HOST_SLOT_0, &host);
+        host.max_freq_khz   = freqs[i];
+        bsp_sdcard_cfg_t cfg = {.mount = &mcfg, .host = &host};
+        err                  = bsp_sdcard_sdspi_mount(&cfg);
+        if (err != ESP_OK) ESP_LOGW(TAG, "no SD card at %d kHz (%s)", freqs[i], esp_err_to_name(err));
+    }
     if (err == ESP_OK) {
         s_card  = bsp_sdcard_get_handle();
         s_sd_ok = s_card != NULL;
@@ -570,12 +586,15 @@ static void sd_mount(void)
             ESP_LOGI(TAG, "SD mounted: %s, %llu MB", s_card->cid.name,
                      (unsigned long long)((uint64_t)s_card->csd.capacity * s_card->csd.sector_size >> 20));
         }
+        s_sd_err[0] = '\0';
     } else {
-        ESP_LOGW(TAG, "no SD card (%s)", esp_err_to_name(err));
+        snprintf(s_sd_err, sizeof(s_sd_err), "%s", esp_err_to_name(err));
     }
+    return s_sd_ok;
 }
 
-/* Internal flash fallback so notes work without a card. */
+/* Internal flash so notes and the vault work without a card. Mounted
+ * regardless of the SD, so a card pulled later still leaves a home. */
 #define FLASH_MOUNT "/flash"
 static bool s_flash_ok;
 static wl_handle_t s_wl = WL_INVALID_HANDLE;
@@ -589,7 +608,12 @@ static void flash_fs_mount(void)
     };
     esp_err_t err = esp_vfs_fat_spiflash_mount_rw_wl(FLASH_MOUNT, "storage", &mcfg, &s_wl);
     s_flash_ok    = err == ESP_OK;
-    if (!s_flash_ok) ESP_LOGW(TAG, "internal storage not mounted (%s)", esp_err_to_name(err));
+    if (s_flash_ok) {
+        s_flash_err[0] = '\0';
+    } else {
+        snprintf(s_flash_err, sizeof(s_flash_err), "%s", esp_err_to_name(err));
+        ESP_LOGW(TAG, "internal storage not mounted (%s)", esp_err_to_name(err));
+    }
 }
 
 const char *hal_storage_root(void)
@@ -597,6 +621,26 @@ const char *hal_storage_root(void)
     if (s_sd_ok) return HAL_SD_MOUNT;
     if (s_flash_ok) return FLASH_MOUNT;
     return NULL;
+}
+
+/* One line for the SYSTEM screen, error names included so a failure can be
+ * read off the deck without a serial console. */
+void hal_storage_status(char *buf, size_t n)
+{
+    if (s_sd_ok) {
+        uint64_t total = 0, free_b = 0;
+        esp_vfs_fat_info(HAL_SD_MOUNT, &total, &free_b);
+        snprintf(buf, n, "SD %.1f / %.1f GB FREE", (double)free_b / 1e9, (double)total / 1e9);
+        return;
+    }
+    const char *sd = s_sd_err[0] ? s_sd_err : "NONE";
+    if (s_flash_ok) {
+        uint64_t total = 0, free_b = 0;
+        esp_vfs_fat_info(FLASH_MOUNT, &total, &free_b);
+        snprintf(buf, n, "SD %s, FLASH %.1f MB FREE", sd, (double)free_b / 1e6);
+    } else {
+        snprintf(buf, n, "SD %s, FLASH %s", sd, s_flash_err[0] ? s_flash_err : "NONE");
+    }
 }
 
 bool hal_storage_is_sd(void) { return s_sd_ok; }
@@ -883,8 +927,8 @@ bool deck_hal_init(void)
     axp_init();
     if (!s_axp_ok) ESP_LOGW(TAG, "AXP2101 not found");
 
-    sd_mount();
-    if (!s_sd_ok) flash_fs_mount();
+    flash_fs_mount();
+    hal_storage_mount_sd();
 
     rgb_init();
 

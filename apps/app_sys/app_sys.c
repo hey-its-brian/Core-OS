@@ -512,6 +512,16 @@ static void fmt_bytes(char *buf, size_t n, size_t used, size_t total)
     snprintf(buf, n, "%lu / %lu KB", (unsigned long)(used / 1024), (unsigned long)(total / 1024));
 }
 
+static void refresh(lv_timer_t *t);
+
+/* Tapping the STORAGE row looks for a card again (one inserted after boot). */
+static void storage_clicked(lv_event_t *e)
+{
+    (void)e;
+    hal_storage_mount_sd();
+    refresh(NULL);
+}
+
 static void refresh(lv_timer_t *t)
 {
     (void)t;
@@ -534,13 +544,8 @@ static void refresh(lv_timer_t *t)
         lv_label_set_text(s_ui.info[INFO_KBD], "NOT DETECTED");
     }
 
-    if (hal_sd_mounted()) {
-        snprintf(buf, sizeof(buf), "SD %.1f / %.1f GB FREE", (double)hal_sd_free_bytes() / 1e9,
-                 (double)hal_sd_total_bytes() / 1e9);
-        lv_label_set_text(s_ui.info[INFO_SD], buf);
-    } else {
-        lv_label_set_text(s_ui.info[INFO_SD], "NO MEDIA");
-    }
+    hal_storage_status(buf, sizeof(buf));
+    lv_label_set_text(s_ui.info[INFO_SD], buf);
 
     hal_power_t p;
     hal_power_read(&p);
@@ -686,6 +691,9 @@ static bool start(deck_app_t *self, lv_obj_t *parent)
     /* ---- SYSTEM ---- */
     section(col, "SYSTEM");
     for (int i = 0; i < INFO_COUNT; i++) s_ui.info[i] = kv_row(col, s_info_keys[i]);
+    lv_obj_t *sto = lv_obj_get_parent(s_ui.info[INFO_SD]);
+    lv_obj_add_flag(sto, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(sto, storage_clicked, LV_EVENT_CLICKED, NULL);
 
     /* ---- UPDATE ---- */
     section(col, "UPDATE");

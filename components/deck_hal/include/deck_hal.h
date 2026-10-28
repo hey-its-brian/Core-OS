@@ -110,6 +110,14 @@ void        hal_tz_set(int index);
 const char *hal_storage_root(void);
 bool        hal_storage_is_sd(void);
 
+/* Look for a card again (one inserted after boot, or a flaky mount).
+ * Returns true when an SD card is mounted afterwards. Takes a moment when
+ * no card answers, so call it from a tap or a module start, not a timer. */
+bool hal_storage_mount_sd(void);
+
+/* "SD 29.6 / 31.9 GB FREE", or the mount error names when nothing mounted. */
+void hal_storage_status(char *buf, size_t n);
+
 bool     hal_sd_mounted(void);
 uint64_t hal_sd_total_bytes(void);
 uint64_t hal_sd_free_bytes(void);

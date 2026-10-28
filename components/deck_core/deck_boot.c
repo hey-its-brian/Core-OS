@@ -68,7 +68,9 @@ static void collect(void)
     if (hal_sd_mounted()) {
         add(ST_OK, NULL, "STO  SDCARD %.1fG", (double)hal_sd_total_bytes() / 1e9);
     } else {
-        add(ST_WARN, "NO MEDIA", "STO  SDCARD");
+        char st[48];
+        hal_storage_status(st, sizeof(st)); /* "SD ESP_ERR_TIMEOUT, FLASH 3.8 MB FREE" */
+        add(ST_WARN, st, "STO");
     }
     net_state_t ns = net_state();
     if (ns == NET_NO_RADIO) {

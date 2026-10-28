@@ -213,6 +213,14 @@ static void go_up(void)
     if (notes_up()) show_browser(was[0] ? was : NULL);
 }
 
+/* The storage tag in the header: a tap looks for an SD card again. */
+static void where_clicked(lv_event_t *e)
+{
+    (void)e;
+    hal_storage_mount_sd();
+    show_browser(NULL);
+}
+
 static void source_clicked(lv_event_t *e)
 {
     (void)e;
@@ -476,6 +484,8 @@ static void show_browser(const char *focus_name)
     }
     lv_label_set_long_mode(where, LV_LABEL_LONG_MODE_DOTS);
     lv_obj_set_flex_grow(where, 1);
+    lv_obj_add_flag(where, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(where, where_clicked, LV_EVENT_CLICKED, NULL);
     (void)t;
     if (vault) tool_button(head, deck_sync_state() == SYNC_RUNNING ? "SYNCING" : "SYNC", sync_clicked, NULL);
     tool_button(head, vault ? "VAULT" : "LOCAL", source_clicked, NULL);
@@ -493,7 +503,7 @@ static void show_browser(const char *focus_name)
 
     lv_obj_t *focus = NULL;
     if (dir == NULL) {
-        lv_obj_t *l = deck_label(list, g_font.mono_s, g_pal.warn, "No SD card and no internal storage.");
+        lv_obj_t *l = deck_label(list, g_font.mono_s, g_pal.warn, "No SD card and no internal storage. Tap the header to look for a card; SYSTEM shows why.");
         lv_obj_set_width(l, LV_PCT(100));
     } else if (s_n.count == 0 && vault && notes_subdir()[0] == '\0') {
         lv_obj_t *l = deck_label(list, g_font.mono_s, g_pal.dim, "Empty vault. SYNC pulls your notes in; LOCAL switches back.");
@@ -811,6 +821,13 @@ static bool start(deck_app_t *self, lv_obj_t *parent)
     (void)self;
     memset(&s_n, 0, sizeof(s_n));
     s_n.parent = parent;
+    /* A card inserted after boot is only seen when something asks. Looking
+     * takes a moment when the slot is empty, so not more than every 15 s. */
+    static uint32_t s_last_look;
+    if (!hal_sd_mounted() && (s_last_look == 0 || lv_tick_elaps(s_last_look) > 15000)) {
+        s_last_look = lv_tick_get();
+        hal_storage_mount_sd();
+    }
     notes_seed();
     /* A stale vault syncs on its own when AUTO SYNC is set. */
     int auto_min = (int)hal_cfg_get_i32(SYNC_KEY_AUTO, 0);
