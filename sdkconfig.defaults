@@ -28,7 +28,7 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
 # ---- Board support (espressif/m5stack_core_s3) ------------------------------
 # 40 lines of RGB565, double buffered, in internal DMA memory: 51 KB.
-CONFIG_BSP_LCD_DRAW_BUF_HEIGHT=40
+CONFIG_BSP_LCD_DRAW_BUF_HEIGHT=24
 CONFIG_BSP_LCD_DRAW_BUF_DOUBLE=y
 CONFIG_BSP_I2C_NUM=1
 CONFIG_BSP_SD_MOUNT_POINT="/sdcard"
@@ -84,3 +84,9 @@ CONFIG_NVS_SEC_KEY_PROTECT_USING_HMAC=y
 CONFIG_NVS_SEC_HMAC_EFUSE_KEY_ID=5
 
 CONFIG_BOOTLOADER_LOG_LEVEL_WARN=y
+
+# TLS buffers in PSRAM: the S3 has 238 KB of internal RAM and a handshake wants 40 KB of it
+CONFIG_MBEDTLS_EXTERNAL_MEM_ALLOC=y
+
+# Wi-Fi and LWIP buffers in PSRAM too
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y

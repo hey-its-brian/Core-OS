@@ -77,3 +77,5 @@
 #define ICON_LAN            "\xF3\xB0\x8C\x97" /* F0317 */
 #define ICON_ANTENNA        "\xF3\xB1\x84\x99" /* F1119 */
 #define ICON_UMBRELLA       "\xF3\xB0\x95\x8A" /* F054A */
+#define ICON_CAMERA         "\xF3\xB0\x84\x80" /* F0100 */
+#define ICON_IMAGE          "\xF3\xB0\x8B\xA9" /* F02E9 */

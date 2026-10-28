@@ -3,7 +3,6 @@
 | Component | Source | License | Notes |
 |---|---|---|---|
 | `components/md4c` | [mity/md4c](https://github.com/mity/md4c) 0.5.2 | MIT | Markdown parser, unmodified. |
-| `components/minimp3` | [lieff/minimp3](https://github.com/lieff/minimp3) at `ea99364` | CC0 1.0 (public domain) | MP3 decoder, unmodified (`minimp3.c` is ours: the implementation unit, layer III only). |
 | esp_codec_dev | [espressif/esp_codec_dev](https://components.espressif.com/components/espressif/esp_codec_dev) 1.5 via the component registry | Apache 2.0 | AW88298 amplifier driver and I2S data path. |
 | `components/libvterm` | [libvterm](https://www.leonerd.org.uk/code/libvterm/) 0.3.3 | MIT | Terminal emulation, unmodified. |
 | JetBrains Mono (subset) | [Google Fonts](https://github.com/google/fonts/tree/main/ofl/jetbrainsmono) | SIL OFL 1.1 | `assets/fonts/OFL-JetBrainsMono.txt`; subset by `tools/subset_term_font.py` |

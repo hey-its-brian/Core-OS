@@ -1,5 +1,0 @@
-dependencies:
-  idf: ">=5.4"
-  # AW88298 amplifier through esp_codec_dev, set up by the CoreS3 BSP.
-  espressif/esp_codec_dev: "~1.5"
-  espressif/m5stack_core_s3: "^4.1"

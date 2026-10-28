@@ -15,7 +15,7 @@
 - WEATHER with its home tile widget
 
 ## v0.3
-- FILES (browser, portal) and PLAYER (speaker)
+- FILES (browser, portal)
 
 ## v0.4
 - NET TOOLS (SCAN, PING, LAN, SPEED)

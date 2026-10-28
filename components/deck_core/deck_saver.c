@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "deck_audio.h"
 #include "deck_boot.h"
 #include "deck_hal.h"
 #include "deck_icons.h"
@@ -20,11 +19,12 @@
 #include "deck_theme.h"
 #include "deck_widgets.h"
 
+static lv_obj_t *s_box, *s_time, *s_date;
+
 #define SLEEP_AFTER_MS (10u * 60u * 1000u) /* saver, then full screen sleep */
 #define DRIFT_EVERY_MS (30u * 1000u)
 
 static lv_obj_t *s_root;  /* overlay on the top layer while the saver runs */
-static lv_obj_t *s_box, *s_time, *s_date, *s_track;
 static lv_timer_t *s_timer;
 static uint32_t s_started, s_moved;
 
@@ -67,13 +67,6 @@ static void update(lv_timer_t *t)
                                    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
     lv_label_set_text_fmt(s_date, "%s %02d %s %04d", days[tm.tm_wday], tm.tm_mday, months[tm.tm_mon],
                           tm.tm_year + 1900);
-    player_state_t ps = player_state();
-    if (ps == PLAYER_STOPPED) {
-        lv_obj_add_flag(s_track, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_remove_flag(s_track, LV_OBJ_FLAG_HIDDEN);
-        deck_icon_text_set(s_track, ps == PLAYER_PLAYING ? ICON_MUSIC : ICON_PAUSE, player_title(), g_pal.accent);
-    }
     if (lv_tick_elaps(s_moved) >= DRIFT_EVERY_MS) drift();
 }
 
@@ -120,7 +113,6 @@ static void open_saver(void)
     lv_obj_set_style_pad_row(s_box, 4, 0);
     s_time  = deck_label(s_box, g_font.disp_xl, g_pal.accent, "");
     s_date  = deck_label(s_box, g_font.mono_m, g_pal.dim, "");
-    s_track = deck_icon_text(s_box, ICON_MUSIC, "", g_font.mono_s, g_pal.accent);
 
     uint8_t bright = (uint8_t)hal_cfg_get_i32("bright", 80);
     hal_backlight_set((uint8_t)(bright / 4 < 10 ? 10 : bright / 4));

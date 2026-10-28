@@ -9,7 +9,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "deck_audio.h"
 #include "deck_hal.h"
 #include "deck_icons.h"
 #include "deck_net.h"
@@ -21,11 +20,12 @@
 #include "deck_update.h"
 #include "deck_widgets.h"
 
+static lv_obj_t *s_kbd, *s_sd, *s_net, *s_upd, *s_link;
+
 static lv_obj_t *s_bar;
 static lv_obj_t *s_left;
 static lv_obj_t *s_clock;
 static lv_obj_t *s_right;
-static lv_obj_t *s_kbd, *s_sd, *s_net, *s_upd, *s_link, *s_music;
 static lv_obj_t *s_pwr; /* icon + percent */
 static lv_timer_t *s_timer;
 
@@ -33,15 +33,6 @@ static void back_clicked(lv_event_t *e)
 {
     (void)e;
     deck_shell_back();
-}
-
-static void music_clicked(lv_event_t *e)
-{
-    (void)e;
-    for (size_t i = 0; i < deck_app_count(); i++) {
-        deck_app_t *a = deck_app_get(i);
-        if (strcmp(a->name, "PLAYER") == 0 && deck_shell_current() != a) deck_shell_launch(a);
-    }
 }
 
 static void clock_clicked(lv_event_t *e)
@@ -101,14 +92,6 @@ static void refresh(lv_timer_t *t)
         case NET_CONNECTING:
         case NET_STARTING: set_icon(s_net, ICON_WIFI, (tm.tm_sec & 1) ? g_pal.warn : g_pal.dim); break;
         default: set_icon(s_net, ICON_WIFI_OFF, g_pal.dim); break;
-    }
-
-    player_state_t ps = player_state();
-    if (ps != PLAYER_STOPPED) {
-        lv_obj_remove_flag(s_music, LV_OBJ_FLAG_HIDDEN);
-        set_icon(s_music, ps == PLAYER_PLAYING ? ICON_MUSIC : ICON_PAUSE, ps == PLAYER_PLAYING ? g_pal.accent : g_pal.dim);
-    } else {
-        lv_obj_add_flag(s_music, LV_OBJ_FLAG_HIDDEN);
     }
 
     /* The portal outlives its module, so its idle shutdown is driven here. */
@@ -192,10 +175,6 @@ void deck_statusbar_create(lv_obj_t *parent)
     lv_obj_align(s_right, LV_ALIGN_RIGHT_MID, -6, 0);
     s_upd = indicator(s_right); /* shown only while an update is waiting */
     lv_obj_add_flag(s_upd, LV_OBJ_FLAG_HIDDEN);
-    s_music = indicator(s_right); /* while a track is loaded; tap opens PLAYER */
-    lv_obj_add_flag(s_music, LV_OBJ_FLAG_HIDDEN | LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_ext_click_area(s_music, 6);
-    lv_obj_add_event_cb(s_music, music_clicked, LV_EVENT_CLICKED, NULL);
     s_link = indicator(s_right);
     lv_obj_add_flag(s_link, LV_OBJ_FLAG_HIDDEN);
     s_kbd = indicator(s_right);

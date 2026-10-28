@@ -28,8 +28,7 @@
 
 #include "app_calc.h"
 #include "app_notes.h"
-#include "app_player.h"
-#include "deck_audio.h"
+#include "app_camera.h"
 #include "app_files.h"
 #include "app_net.h"
 #include "app_rf.h"
@@ -308,13 +307,12 @@ int main(int argc, char **argv)
     if (accent >= 0) hal_cfg_set_i32("accent", accent);
     deck_theme_init();
     deck_input_init();
-    player_init();
     /* Every module, flat: Alt+letter shortcuts and lookups by name. */
     deck_app_register(app_term());
     deck_app_register(app_notes());
     deck_app_register(app_calc());
     deck_app_register(app_weather());
-    deck_app_register(app_player());
+    deck_app_register(app_camera());
     deck_app_register(app_files());
     deck_app_register(app_net());
     deck_app_register(app_rf());
@@ -327,7 +325,7 @@ int main(int argc, char **argv)
     deck_home_add_app(app_calc());
     deck_home_add_app(app_weather());
     deck_home_add_app(app_files());
-    deck_home_add_app(app_player());
+    deck_home_add_app(app_camera());
     deck_home_add_app(app_net());
     deck_home_add_app(app_rf());
     deck_home_add_app(app_sys());

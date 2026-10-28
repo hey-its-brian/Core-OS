@@ -4,7 +4,6 @@
 #include "deck_fx.h"
 #include "deck_hal.h"
 #include "deck_launcher.h"
-#include "deck_audio.h"
 #include "deck_modal.h"
 #include "deck_saver.h"
 #include "deck_statusbar.h"
@@ -196,7 +195,6 @@ void deck_shell_shortcuts(void)
         "  ALT+SPACE   back to the deck\n"
         "  ALT+0       sleep (or tap the clock)\n"
         "  ALT+H       this list\n"
-        "  ALT+P       pause / resume music\n"
         "  DEL         back / close\n"
         "  SYM+0       Esc\n"
         "  FN+K N M $  arrows\n"
@@ -211,7 +209,11 @@ void deck_shell_shortcuts(void)
         "CALC\n"
         "  ENTER evaluate  UP/DOWN recall\n"
         "  ALT+D deg/rad   ALT+K keypad\n"
-        "  ALT+L clear tape",
+        "  ALT+L clear tape\n"
+        "\n"
+        "CAMERA\n"
+        "  ENTER shoot  S size  G gallery\n"
+        "  A cam Wi-Fi / home  H host  L led",
     };
     deck_modal_info("SHORTCUTS", cols, 1);
 }
@@ -293,10 +295,6 @@ bool deck_shell_key(const deck_key_t *k)
         }
         if (k->code == HID_H) {
             deck_shell_shortcuts();
-            return true;
-        }
-        if (k->code == HID_P) {
-            player_toggle(); /* music pause / resume from anywhere */
             return true;
         }
         if (k->code >= HID_1 && k->code <= HID_9) {
