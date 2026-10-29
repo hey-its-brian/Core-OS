@@ -209,7 +209,11 @@ void deck_shell_shortcuts(void)
         "CALC\n"
         "  ENTER evaluate  UP/DOWN recall\n"
         "  ALT+D deg/rad   ALT+K keypad\n"
-        "  ALT+L clear tape",
+        "  ALT+L clear tape\n"
+        "\n"
+        "WEATHER\n"
+        "  LEFT/RIGHT or 1-3 view  R refresh\n"
+        "  L city  U units",
     };
     deck_modal_info("SHORTCUTS", cols, 1);
 }

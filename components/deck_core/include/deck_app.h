@@ -45,7 +45,9 @@ struct deck_app {
     /* Optional: the home tile shows live content (a widget) under the usual
      * icon, name and tagline. `body` is the box below them and `icon` the
      * tile's icon label, which the module may retarget (a weather glyph).
-     * Both are deleted with the home screen, so hang timers off `body`. */
+     * Both are deleted with the home screen, so hang timers off `body`.
+     * Core//OS: the 60 px tiles have no body box, so `body` is the tile's
+     * name label, which the widget may rewrite (a temperature). */
     void (*on_tile)(deck_app_t *self, lv_obj_t *body, lv_obj_t *icon);
 
     void *user;

@@ -102,6 +102,10 @@ static lv_obj_t *build_tile(lv_obj_t *parent, const deck_tile_t *it, int index)
     lv_obj_set_width(name, TILE - 6);
     lv_obj_set_style_text_align(name, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(name, LV_ALIGN_BOTTOM_MID, 0, -4);
+
+    /* A module with a widget makes the tile live: there is no room for a
+     * body box here, so it gets the name label to rewrite (see deck_app.h). */
+    if (app && !offline && app->on_tile) app->on_tile(app, name, icon);
     return t;
 }
 

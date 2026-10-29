@@ -12,7 +12,7 @@
 
 ## v0.2
 - [x] NOTES with the Obsidian vault sync (landed early, in v0.1.0)
-- WEATHER with its home tile widget
+- [x] WEATHER with its home tile widget (temperature and conditions on the tile)
 
 ## v0.3
 - FILES (browser, portal)
