@@ -10,7 +10,7 @@
 - [ ] Wi-Fi join, battery readout and OTA check on the hardware
 - [x] Release process (signed OTA images, GitHub releases)
 
-## v0.2
+## v0.2 (2026-10-28)
 - [x] NOTES with the Obsidian vault sync (landed early, in v0.1.0)
 - [x] WEATHER with its home tile widget (temperature and conditions on the tile)
 
