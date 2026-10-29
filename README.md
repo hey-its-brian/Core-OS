@@ -5,10 +5,10 @@ the **Faces Keyboard3**. A port of [DECK//OS](https://github.com/hey-its-brian/t
 (the Tab5 cyberdeck) to a 2 inch, 320x240 screen and a 35 key keyboard: the
 same modules, the same look, fitted to a pocket deck.
 
-Status: **v0.2.0**. The shell, home grid, SYSTEM, CALC, NOTES
-(with Obsidian vault sync) and WEATHER work; the other modules show their
-manifests until they are ported. Updates arrive over the air from this
-repository's releases.
+Status: **v0.3.0 in progress**. The shell, home grid, SYSTEM, CALC, NOTES
+(with Obsidian vault sync), WEATHER and NET TOOLS work; the other modules
+show their manifests until they are ported. Updates arrive over the air from
+this repository's releases.
 
 ## What runs
 
@@ -20,7 +20,7 @@ repository's releases.
 | WEATHER   | ready  | Open-Meteo, no key: NOW, 24H trace, 7 DAY strip; city search; offline cache; live home tile |
 | FILES     | v0.3   | SD browser and the browser portal |
 | (open)    |        | a free tile; the UnitCamS3 CAMERA module lives on the `camera` branch |
-| NET TOOLS | v0.4   | scanner, ping, LAN sweep, speed test |
+| NET TOOLS | ready  | Wi-Fi scanner with channel chart, ping / DNS / traceroute / port check, LAN sweep with mDNS names, speed test |
 | TERMINAL  | v0.5   | SSH and Ollama chat |
 | RF WATCH  | v0.6   | the RF Sentinel board |
 

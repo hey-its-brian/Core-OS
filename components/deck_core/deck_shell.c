@@ -213,7 +213,11 @@ void deck_shell_shortcuts(void)
         "\n"
         "WEATHER\n"
         "  LEFT/RIGHT or 1-3 view  R refresh\n"
-        "  L city  U units",
+        "  L city  U units\n"
+        "\n"
+        "NET TOOLS\n"
+        "  1-4 tab  R rescan / rerun\n"
+        "  ENTER details / ping  TAB next",
     };
     deck_modal_info("SHORTCUTS", cols, 1);
 }
@@ -279,6 +283,9 @@ bool deck_shell_key(const deck_key_t *k)
         }
         if (k->code == HID_ENTER) {
             deck_modal_enter();
+            return true;
+        }
+        if ((k->code == HID_DOWN || k->code == HID_UP) && deck_modal_scroll(k->code == HID_DOWN ? 1 : -1)) {
             return true;
         }
         return (k->mods & DECK_MOD_ALT) != 0; /* no module switching under a dialog */

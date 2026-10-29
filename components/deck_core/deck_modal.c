@@ -24,6 +24,7 @@ static struct {
     lv_obj_t *alt_btn; /* the middle button of a choice */
     lv_obj_t *first_row;
     lv_obj_t *cancel_btn;
+    lv_obj_t *scroll; /* read-only text that UP / DOWN scroll (info) */
     void *user;
     bool danger;     /* CANCEL focused, Enter ignored for DANGER_ARM_MS */
     uint32_t opened; /* lv_tick at open */
@@ -32,6 +33,14 @@ static struct {
 #define DANGER_ARM_MS 1000
 
 bool deck_modal_active(void) { return s_m.kind != MODAL_NONE; }
+
+bool deck_modal_scroll(int dir)
+{
+    if (s_m.kind == MODAL_NONE || s_m.scroll == NULL) return false;
+    int32_t step = lv_font_get_line_height(g_font.mono_s) * 3;
+    lv_obj_scroll_by_bounded(s_m.scroll, 0, dir > 0 ? -step : step, LV_ANIM_ON);
+    return true;
+}
 
 /* Tear the dialog down and hand back the callback to run. Deletion is
  * deferred because we are usually inside an event of one of its buttons. */
@@ -300,12 +309,14 @@ void deck_modal_info(const char *title, const char *const *columns, int count)
     lv_obj_set_scroll_dir(cols, LV_DIR_VER);
     lv_obj_set_flex_flow(cols, LV_FLEX_FLOW_ROW);
     lv_obj_set_style_pad_column(cols, 12, 0);
+    lv_obj_set_scrollbar_mode(cols, LV_SCROLLBAR_MODE_AUTO);
     for (int i = 0; i < count; i++) {
         lv_obj_t *l = deck_label(cols, g_font.mono_s, g_pal.text, columns[i]);
         lv_obj_set_flex_grow(l, 1);
         lv_obj_set_style_text_line_space(l, 1, 0);
     }
     end_build(p, NULL); /* a single button: rename it, Enter and Esc both close */
+    s_m.scroll = cols;
     lv_label_set_text(lv_obj_get_child_by_type(s_m.cancel_btn, 0, &lv_label_class), "CLOSE");
 }
 

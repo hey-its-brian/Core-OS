@@ -15,10 +15,11 @@
 - [x] WEATHER with its home tile widget (temperature and conditions on the tile)
 
 ## v0.3
+- [x] NET TOOLS (SCAN, PING, LAN, SPEED), moved up from v0.4
 - FILES (browser, portal)
 
 ## v0.4
-- NET TOOLS (SCAN, PING, LAN, SPEED)
+- FILES, if it slips from v0.3
 
 ## v0.5
 - TERMINAL (SSH, Ollama)

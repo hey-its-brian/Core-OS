@@ -34,6 +34,9 @@ void deck_modal_choice(const char *title, const char *message, const char *later
 
 /* Read-only text in `count` side-by-side columns with a CLOSE button. */
 void deck_modal_info(const char *title, const char *const *columns, int count);
+/* UP / DOWN on an info dialog: scroll its text (dir > 0 = further down).
+ * False when the open dialog has nothing to scroll. */
+bool deck_modal_scroll(int dir);
 /* Same, for a risky "yes": CANCEL has focus and Enter does nothing for the
  * first second, so type-ahead cannot accept it. */
 void deck_modal_confirm_danger(const char *title, const char *message, const char *yes_label, deck_confirm_cb_t cb,
