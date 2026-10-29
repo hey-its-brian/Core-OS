@@ -5,7 +5,7 @@ the **Faces Keyboard3**. A port of [DECK//OS](https://github.com/hey-its-brian/t
 (the Tab5 cyberdeck) to a 2 inch, 320x240 screen and a 35 key keyboard: the
 same modules, the same look, fitted to a pocket deck.
 
-Status: **v0.3.0 in progress**. The shell, home grid, SYSTEM, CALC, NOTES
+Status: **v0.3.0**. The shell, home grid, SYSTEM, CALC, NOTES
 (with Obsidian vault sync), WEATHER and NET TOOLS work; the other modules
 show their manifests until they are ported. Updates arrive over the air from
 this repository's releases.

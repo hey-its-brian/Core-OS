@@ -14,12 +14,11 @@
 - [x] NOTES with the Obsidian vault sync (landed early, in v0.1.0)
 - [x] WEATHER with its home tile widget (temperature and conditions on the tile)
 
-## v0.3
+## v0.3 (2026-10-28)
 - [x] NET TOOLS (SCAN, PING, LAN, SPEED), moved up from v0.4
-- FILES (browser, portal)
 
 ## v0.4
-- FILES, if it slips from v0.3
+- FILES (browser, portal)
 
 ## v0.5
 - TERMINAL (SSH, Ollama)
